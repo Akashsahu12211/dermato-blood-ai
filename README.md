@@ -86,25 +86,10 @@ The local SQLite database stores patient fields and base64-encoded image visuali
 
 Before using this project with any real data, add authentication, access controls, encryption, retention rules, audit logging, and a formal privacy/compliance review.
 
-## GitHub publishing checklist
-
-1. Create a new **empty** GitHub repository (do not add a README or `.gitignore` there).
-2. Copy its HTTPS URL, for example `https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git`.
-3. In this project folder, run:
-
-   ```powershell
-   git init
-   git add .
-   git commit -m "Initial commit: DermatoBlood AI"
-   git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
-   git push -u origin main
-   ```
-
-4. When GitHub asks for authentication, use your GitHub sign-in flow or a Personal Access Token instead of an account password.
-
 Do not commit `blood_group_app_v2.db`, generated PDF reports, real fingerprint images, patient data, or any credentials.
 
 ## License
 
-No license has been selected yet. Until one is added, all rights are reserved by the project owner. Choose an appropriate open-source license before inviting reuse.
+This project is licensed under the [MIT License](./LICENSE).
+
+Copyright (c) 2026 Akash Sahu.
