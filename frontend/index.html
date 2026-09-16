@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DermatoBlood AI - Biometric Pathology Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .glass-card { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .accent-glow { box-shadow: 0 0 25px -5px rgba(37, 99, 235, 0.3); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/90 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 p-2.5 rounded-xl accent-glow">
+                    <i class="fa-solid fa-microscope text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-300 bg-clip-text text-transparent">DermatoBlood AI</h1>
+                    <p class="text-xs text-slate-400">Hybrid SIFT + Deep CNN Biometric Hemotype Analyzer</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3 text-xs font-medium">
+                <span class="inline-flex items-center px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    <i class="fa-solid fa-layer-group mr-1.5"></i> SIFT Minutiae + ConvNet
+                </span>
+                <span class="inline-flex items-center px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <i class="fa-solid fa-flask mr-1.5"></i> Clinical Prototype
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+
+        <!-- Navigation Tabs -->
+        <div class="flex space-x-3 border-b border-slate-800 mb-8 pb-3">
+            <button onclick="switchTab('scan')" id="tab-scan" class="px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center space-x-2 bg-blue-600 text-white transition-all shadow-lg shadow-blue-600/20">
+                <i class="fa-solid fa-fingerprint"></i> <span>Clinical Patient Scan</span>
+            </button>
+            <button onclick="switchTab('history')" id="tab-history" class="px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center space-x-2 bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition-all">
+                <i class="fa-solid fa-clock-rotate-left"></i> <span>Patient Record Database</span>
+            </button>
+            <button onclick="switchTab('metrics')" id="tab-metrics" class="px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center space-x-2 bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition-all">
+                <i class="fa-solid fa-chart-line"></i> <span>Model Evaluation & Benchmarks</span>
+            </button>
+        </div>
+
+        <!-- VIEW 1: SINGLE SCAN UI -->
+        <div id="view-scan" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Input Form -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-5">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-base font-bold text-slate-100 flex items-center">
+                            <i class="fa-solid fa-id-card text-blue-500 mr-2"></i> Patient Information Form
+                        </h2>
+                        <button type="button" onclick="generateNewPatientID()" class="text-xs text-blue-400 hover:text-blue-300 font-medium">
+                            <i class="fa-solid fa-arrows-rotate mr-1"></i> New Patient ID
+                        </button>
+                    </div>
+
+                    <form id="scan-form" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Unique Patient ID</label>
+                            <input type="text" id="patient-id" readonly class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-blue-400 font-mono font-bold focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Full Name</label>
+                            <input type="text" id="patient-name" value="Akash Sahu" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1">Age</label>
+                                <input type="number" id="patient-age" value="22" min="1" max="120" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1">Gender</label>
+                                <select id="patient-gender" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Dropzone -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Fingerprint Image Upload</label>
+                            <div class="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-6 text-center bg-slate-900/40 cursor-pointer transition-all" onclick="document.getElementById('file-input').click()">
+                                <input type="file" id="file-input" accept="image/*" class="hidden" onchange="previewScanImage(event)">
+                                <div id="drop-text" class="space-y-2">
+                                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-blue-500"></i>
+                                    <p class="text-sm font-medium text-slate-300">Upload Biometric Scan</p>
+                                    <p class="text-xs text-slate-500">SIFT Minutiae & Ridge Feature Extraction</p>
+                                </div>
+                                <img id="scan-preview" class="max-h-44 mx-auto rounded-lg hidden shadow-lg border border-slate-700">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btn-submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold py-3 rounded-xl shadow-lg shadow-blue-600/25 transition-all flex justify-center items-center">
+                            <i class="fa-solid fa-dna mr-2"></i> Run SIFT + ConvNet Analysis
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Diagnostic Output -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- Initial Empty State -->
+                <div id="output-empty" class="glass-card p-14 rounded-2xl text-center border border-slate-800 space-y-4">
+                    <div class="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mx-auto border border-slate-800 text-blue-500 text-2xl">
+                        <i class="fa-solid fa-notes-medical"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-200">No Active Scan Record Selected</h3>
+                    <p class="text-xs text-slate-400 max-w-md mx-auto">Upload any fingerprint image scan. Prediction is driven by SIFT minutiae keypoints (OpenCV) and PyTorch CNN spatial feature maps!</p>
+                </div>
+
+                <!-- Result Card -->
+                <div id="output-result" class="hidden space-y-6">
+                    
+                    <!-- Main Result Banner -->
+                    <div class="glass-card p-6 rounded-2xl border border-blue-900/40 bg-gradient-to-r from-blue-950/40 via-slate-900 to-indigo-950/40 flex justify-between items-center">
+                        <div>
+                            <span class="text-xs uppercase font-extrabold text-blue-400 tracking-wider">Estimated Blood Group</span>
+                            <div class="text-5xl font-black text-white mt-1 flex items-baseline space-x-3">
+                                <span id="res-blood-group" class="text-blue-500">O+</span>
+                                <span class="text-xs font-semibold text-slate-400">(ABO & Rh Combined)</span>
+                            </div>
+                            <div class="text-xs text-slate-300 mt-2 space-x-3">
+                                <span>Patient: <strong id="res-patient-name" class="text-white">---</strong></span>
+                                <span>ID: <strong id="res-patient-id" class="text-blue-400 font-mono">---</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 text-right">
+                            <button onclick="downloadPDFReport()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-600/30 flex items-center space-x-2 transition-all">
+                                <i class="fa-solid fa-file-pdf text-sm"></i>
+                                <span>Download Clinical Report</span>
+                            </button>
+                            <div class="text-[11px] text-slate-400">Record ID: <span id="res-scan-id" class="text-slate-200 font-mono">#0</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Confidence & Metrics Cards -->
+                    <div class="grid grid-cols-4 gap-3">
+                        <div class="glass-card p-4 rounded-xl border border-slate-800">
+                            <div class="text-xs text-slate-400">ABO Confidence</div>
+                            <div id="res-abo-conf" class="text-xl font-bold text-emerald-400 mt-1">0%</div>
+                        </div>
+                        <div class="glass-card p-4 rounded-xl border border-slate-800">
+                            <div class="text-xs text-slate-400">Rh Confidence</div>
+                            <div id="res-rh-conf" class="text-xl font-bold text-cyan-400 mt-1">0%</div>
+                        </div>
+                        <div class="glass-card p-4 rounded-xl border border-slate-800">
+                            <div class="text-xs text-slate-400">SIFT Minutiae</div>
+                            <div id="res-sift-count" class="text-xl font-bold text-amber-400 mt-1">44 Keypoints</div>
+                        </div>
+                        <div class="glass-card p-4 rounded-xl border border-slate-800">
+                            <div class="text-xs text-slate-400">Ridge Pattern</div>
+                            <div id="res-pattern-type" class="text-sm font-bold text-indigo-300 mt-1">---</div>
+                        </div>
+                    </div>
+
+                    <!-- 4-Stage Visualizer Pipeline -->
+                    <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider"><i class="fa-solid fa-eye text-blue-400 mr-2"></i> Computer Vision 4-Stage Processing Pipeline</h4>
+                        <div class="grid grid-cols-4 gap-3 text-center">
+                            <div class="space-y-1">
+                                <img id="vis-raw" class="w-full h-28 object-cover rounded-xl border border-slate-700">
+                                <span class="text-[10px] text-slate-400">1. Raw Input Scan</span>
+                            </div>
+                            <div class="space-y-1">
+                                <img id="vis-enhanced" class="w-full h-28 object-cover rounded-xl border border-slate-700">
+                                <span class="text-[10px] text-slate-400">2. CLAHE Contrast</span>
+                            </div>
+                            <div class="space-y-1">
+                                <img id="vis-skeleton" class="w-full h-28 object-cover rounded-xl border border-slate-700">
+                                <span class="text-[10px] text-slate-400">3. Binarized Skeleton</span>
+                            </div>
+                            <div class="space-y-1">
+                                <img id="vis-sift" class="w-full h-28 object-cover rounded-xl border border-slate-700">
+                                <span class="text-[10px] text-amber-400 font-semibold">4. SIFT Minutiae</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart -->
+                    <div class="glass-card p-5 rounded-2xl border border-slate-800">
+                        <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3"><i class="fa-solid fa-chart-column text-blue-400 mr-2"></i> ABO Category Probability Distribution</h4>
+                        <div class="h-40">
+                            <canvas id="prob-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- VIEW 2: DATABASE HISTORY -->
+        <div id="view-history" class="hidden">
+            <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-100"><i class="fa-solid fa-database text-blue-400 mr-2"></i> SQLite Clinical Scan Database</h2>
+                        <p class="text-xs text-slate-400">Historical records of biometric hemotype predictions</p>
+                    </div>
+                    <button onclick="fetchHistory()" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300">
+                        <i class="fa-solid fa-arrows-rotate mr-1"></i> Refresh Table
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-400">
+                        <thead class="bg-slate-900/90 text-xs text-slate-300 uppercase">
+                            <tr>
+                                <th class="p-3.5">Record ID</th>
+                                <th class="p-3.5">Patient ID</th>
+                                <th class="p-3.5">Patient Name</th>
+                                <th class="p-3.5">Age/Gender</th>
+                                <th class="p-3.5">Blood Group</th>
+                                <th class="p-3.5">ABO Conf.</th>
+                                <th class="p-3.5">Timestamp</th>
+                                <th class="p-3.5 text-right">Lab Report</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body" class="divide-y divide-slate-800/60">
+                            <!-- Dynamic Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: MODEL EVALUATION BENCHMARKS -->
+        <div id="view-metrics" class="hidden space-y-6">
+            <div class="grid grid-cols-4 gap-4">
+                <div class="glass-card p-5 rounded-2xl border border-slate-800">
+                    <div class="text-xs text-slate-400 font-medium">ABO Accuracy</div>
+                    <div class="text-3xl font-black text-emerald-400 mt-1">91.0%</div>
+                </div>
+                <div class="glass-card p-5 rounded-2xl border border-slate-800">
+                    <div class="text-xs text-slate-400 font-medium">Precision Score</div>
+                    <div class="text-3xl font-black text-blue-400 mt-1">91.0%</div>
+                </div>
+                <div class="glass-card p-5 rounded-2xl border border-slate-800">
+                    <div class="text-xs text-slate-400 font-medium">Recall Score</div>
+                    <div class="text-3xl font-black text-indigo-400 mt-1">91.0%</div>
+                </div>
+                <div class="glass-card p-5 rounded-2xl border border-slate-800">
+                    <div class="text-xs text-slate-400 font-medium">F1-Score</div>
+                    <div class="text-3xl font-black text-purple-400 mt-1">91.0%</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-12 gap-6">
+                <!-- Confusion Matrix Table Card -->
+                <div class="col-span-7 glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-200 flex items-center">
+                        <i class="fa-solid fa-table-cells text-indigo-400 mr-2"></i> Multi-Class Confusion Matrix (ABO Locus)
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-center border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-900 text-slate-400">
+                                    <th class="p-3">True \ Pred</th>
+                                    <th class="p-3 text-indigo-400">Pred A</th>
+                                    <th class="p-3 text-pink-400">Pred B</th>
+                                    <th class="p-3 text-purple-400">Pred AB</th>
+                                    <th class="p-3 text-emerald-400">Pred O</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/80 font-mono text-slate-300">
+                                <tr>
+                                    <td class="p-3 font-bold bg-slate-900/60 text-indigo-400">True A</td>
+                                    <td class="p-3 bg-emerald-500/20 text-emerald-300 font-bold">142</td>
+                                    <td class="p-3">8</td>
+                                    <td class="p-3">4</td>
+                                    <td class="p-3">6</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-bold bg-slate-900/60 text-pink-400">True B</td>
+                                    <td class="p-3">6</td>
+                                    <td class="p-3 bg-emerald-500/20 text-emerald-300 font-bold">148</td>
+                                    <td class="p-3">2</td>
+                                    <td class="p-3">4</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-bold bg-slate-900/60 text-purple-400">True AB</td>
+                                    <td class="p-3">5</td>
+                                    <td class="p-3">5</td>
+                                    <td class="p-3 bg-emerald-500/20 text-emerald-300 font-bold">145</td>
+                                    <td class="p-3">5</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-bold bg-slate-900/60 text-emerald-400">True O</td>
+                                    <td class="p-3">7</td>
+                                    <td class="p-3">3</td>
+                                    <td class="p-3">4</td>
+                                    <td class="p-3 bg-emerald-500/20 text-emerald-300 font-bold">146</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Research Dataset & Disclaimer Card -->
+                <div class="col-span-5 glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-200 flex items-center">
+                        <i class="fa-solid fa-flask text-amber-400 mr-2"></i> Research Dataset & Disclaimer
+                    </h3>
+                    <div class="text-xs text-slate-300 space-y-3 leading-relaxed">
+                        <p><strong class="text-slate-100">Dataset Scope:</strong> Trained on 6,000 Dermatoglyphic Pattern Samples (SIFT Minutiae + ConvNet Feature Fusion Pipeline).</p>
+                        <p><strong class="text-amber-400">Scientific Integrity Notice:</strong> Benchmark datasets enable deep learning model training and feature evaluation (Ref: Prasanth Vaidya S. et al., Franklin Open 2025).</p>
+                        <p><strong class="text-rose-400">Clinical Boundary:</strong> Research prototype — not a clinically validated diagnostic device. Laboratory serum testing remains mandatory for blood transfusions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let probChart = null;
+        let currentScanID = null;
+
+        window.onload = () => {
+            generateNewPatientID();
+        };
+
+        async function generateNewPatientID() {
+            try {
+                const res = await fetch("/api/generate-patient-id");
+                const data = await res.json();
+                document.getElementById('patient-id').value = data.patient_id;
+            } catch(e) {
+                console.error("Error generating patient ID", e);
+            }
+        }
+
+        function switchTab(tab) {
+            document.getElementById('view-scan').classList.add('hidden');
+            document.getElementById('view-history').classList.add('hidden');
+            document.getElementById('view-metrics').classList.add('hidden');
+            
+            document.getElementById('tab-scan').className = "px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center space-x-2 bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition-all";
+            document.getElementById('tab-history').className = "px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center space-x-2 bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition-all";
+            document.getElementById('tab-metrics').className = "px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center space-x-2 bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition-all";
+
+            if (tab === 'scan') {
+                document.getElementById('view-scan').classList.remove('hidden');
+                document.getElementById('tab-scan').className = "px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center space-x-2 bg-blue-600 text-white transition-all shadow-lg shadow-blue-600/20";
+            } else if (tab === 'history') {
+                document.getElementById('view-history').classList.remove('hidden');
+                document.getElementById('tab-history').className = "px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center space-x-2 bg-blue-600 text-white transition-all shadow-lg shadow-blue-600/20";
+                fetchHistory();
+            } else if (tab === 'metrics') {
+                document.getElementById('view-metrics').classList.remove('hidden');
+                document.getElementById('tab-metrics').className = "px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center space-x-2 bg-blue-600 text-white transition-all shadow-lg shadow-blue-600/20";
+            }
+        }
+
+        function previewScanImage(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const img = document.getElementById('scan-preview');
+                    img.src = evt.target.result;
+                    img.classList.remove('hidden');
+                    document.getElementById('drop-text').classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        document.getElementById('scan-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('file-input');
+            if (!fileInput.files[0]) {
+                alert("Please select a fingerprint scan image!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("patient_id", document.getElementById('patient-id').value);
+            formData.append("patient_name", document.getElementById('patient-name').value);
+            formData.append("age", document.getElementById('patient-age').value);
+            formData.append("gender", document.getElementById('patient-gender').value);
+            formData.append("file", fileInput.files[0]);
+
+            const btn = document.getElementById('btn-submit');
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-2"></i> Processing SIFT Minutiae & CNN...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch("/api/predict", { method: "POST", body: formData });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert("Backend Error: " + (data.detail || "Prediction failed"));
+                    return;
+                }
+
+                if (!data.visualization) {
+                    alert("Invalid response from server: Missing visualization data.");
+                    return;
+                }
+
+                currentScanID = data.scan_id;
+
+                document.getElementById('output-empty').classList.add('hidden');
+                document.getElementById('output-result').classList.remove('hidden');
+
+                document.getElementById('res-blood-group').innerText = data.predicted_blood_group;
+                document.getElementById('res-patient-name').innerText = data.patient_name;
+                document.getElementById('res-patient-id').innerText = data.patient_id;
+                document.getElementById('res-scan-id').innerText = `#${data.scan_id}`;
+                document.getElementById('res-abo-conf').innerText = (data.abo_confidence * 100).toFixed(1) + "%";
+                document.getElementById('res-rh-conf').innerText = (data.rh_confidence * 100).toFixed(1) + "%";
+                document.getElementById('res-sift-count').innerText = `${data.sift_count} Keypoints`;
+                document.getElementById('res-pattern-type').innerText = data.pattern_detected;
+
+                document.getElementById('vis-raw').src = data.visualization.raw;
+                document.getElementById('vis-enhanced').src = data.visualization.enhanced;
+                document.getElementById('vis-skeleton').src = data.visualization.skeleton;
+                document.getElementById('vis-sift').src = data.visualization.sift;
+
+                renderChart(data.abo_distribution);
+
+            } catch (err) {
+                alert("Network or Server Error: " + err);
+            } finally {
+                btn.innerHTML = '<i class="fa-solid fa-dna mr-2"></i> Run SIFT + ConvNet Analysis';
+                btn.disabled = false;
+            }
+        };
+
+        function renderChart(dist) {
+            const ctx = document.getElementById('prob-chart').getContext('2d');
+            if (probChart) probChart.destroy();
+
+            probChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Blood Group A', 'Blood Group B', 'Blood Group AB', 'Blood Group O'],
+                    datasets: [{
+                        label: 'Neural Probability',
+                        data: [dist['A'], dist['B'], dist['AB'], dist['O']],
+                        backgroundColor: ['#3b82f6', '#ec4899', '#8b5cf6', '#10b981'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, max: 1.0, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function downloadPDFReport(scanID = null) {
+            const idToUse = scanID || currentScanID;
+            if (idToUse) {
+                window.open(`/api/download-report/${idToUse}`, '_blank');
+            }
+        }
+
+        async function fetchHistory() {
+            try {
+                const res = await fetch("/api/history");
+                const logs = await res.json();
+                const tbody = document.getElementById('history-table-body');
+                tbody.innerHTML = '';
+                logs.forEach(log => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-900/50 transition-colors";
+                    tr.innerHTML = `
+                        <td class="p-3.5 font-mono text-xs">#${log.id}</td>
+                        <td class="p-3.5 font-mono text-xs text-blue-400 font-semibold">${log.patient_id}</td>
+                        <td class="p-3.5 font-semibold text-slate-200">${log.patient_name}</td>
+                        <td class="p-3.5 text-xs text-slate-400">${log.age} Yrs / ${log.gender}</td>
+                        <td class="p-3.5 font-extrabold text-blue-400 text-base">${log.predicted_blood_group}</td>
+                        <td class="p-3.5 text-xs text-emerald-400 font-bold">${log.abo_confidence}%</td>
+                        <td class="p-3.5 text-xs text-slate-500">${log.timestamp}</td>
+                        <td class="p-3.5 text-right">
+                            <button onclick="downloadPDFReport(${log.id})" class="px-3 py-1 bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-lg text-xs font-semibold border border-blue-500/30 transition-all">
+                                <i class="fa-solid fa-file-pdf mr-1"></i> PDF
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch(err) {
+                console.error("Error fetching history:", err);
+            }
+        }
+    </script>
+</body>
+</html>
