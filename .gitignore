@@ -11,9 +11,10 @@ env/
 blood_group_app_v2.db
 reports/*
 !reports/.gitkeep
+data/
+dataset.csv
 
 # OS/editor files
 .DS_Store
 Thumbs.db
 .vscode/
-

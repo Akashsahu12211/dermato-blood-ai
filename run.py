@@ -1,5 +1,4 @@
 import os
-import sys
 import webbrowser
 
 def main():
@@ -9,18 +8,18 @@ def main():
     
     models_path = os.path.join(os.path.dirname(__file__), "models", "blood_group_model.pth")
     if not os.path.exists(models_path):
-        print("⚡ Pre-trained model weights not found. Initializing training...")
+        print("Pre-trained model weights not found. Initializing training...")
         from scripts.generate_data_and_train import train_and_save_model
         train_and_save_model()
     
-    print("🚀 Starting FastAPI Server at http://localhost:8000 ...")
+    print("Starting FastAPI Server at http://localhost:8000 ...")
     
     try:
         import uvicorn
         webbrowser.open("http://localhost:8000")
         uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
     except ImportError:
-        print("❌ Error: Dependencies missing. Run: pip install -r requirements.txt")
+        print("Error: Dependencies missing. Run: pip install -r requirements.txt")
 
 if __name__ == "__main__":
     main()

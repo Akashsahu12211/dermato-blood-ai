@@ -31,7 +31,7 @@ def generate_fingerprint_pattern(pattern_type, seed):
 
 def train_and_save_model():
     print("="*60)
-    print("🔬 TRAINING DERMATOBLOODNET V2 MODEL ON 6,000 DERMATOGLYPHIC SAMPLES")
+    print("TRAINING DERMATOBLOODNET V2 MODEL ON SYNTHETIC DERMATOGLYPHIC SAMPLES")
     print("="*60)
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -81,7 +81,7 @@ def train_and_save_model():
     os.makedirs(models_dir, exist_ok=True)
     model_path = os.path.join(models_dir, "blood_group_model.pth")
     torch.save(model.state_dict(), model_path)
-    print(f"✅ Trained Model successfully saved to '{model_path}'!")
+    print(f"Trained model successfully saved to '{model_path}'.")
 
 if __name__ == "__main__":
     train_and_save_model()
