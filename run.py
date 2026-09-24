@@ -3,7 +3,7 @@ import webbrowser
 
 def main():
     print("="*65)
-    print(" 🩸 DERMATOBLOOD AI - SIFT + CNN CLINICAL SYSTEM V5.0")
+    print(" DERMATOBLOOD AI - SIFT + CNN CLINICAL SYSTEM V5.0")
     print("="*65)
     
     models_path = os.path.join(os.path.dirname(__file__), "models", "blood_group_model.pth")
